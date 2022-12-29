@@ -1,0 +1,13 @@
+djangorestframework-simplejwt
+psycopg2-binary==2.9.5
+Django==4.1
+Pillow==9.2.0
+djangorestframework
+python-decouple==3.4 #conf
+drf-yasg #swager
+django-ckeditor
+django-cors-headers
+django-filter
+drf-extra-fields
+sendgrid
+gunicorn

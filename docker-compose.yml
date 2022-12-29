@@ -1,0 +1,50 @@
+version: '2'
+
+services:
+  postgres_db:
+    image: 'postgres:alpine'
+    restart: always
+#    env_file:
+#      - .env
+    environment:
+#      POSTGRES_DB: '${POST_DB}'
+      POSTGRES_DB: 'hrgroup'
+      POSTGRES_USER: 'mars7x3'
+      POSTGRES_PASSWORD: '1'
+    ports:
+      - "5432:5432"
+    volumes:
+        - postgres_data:/var/lib/postgresql/data
+
+  web:
+    build: ./
+    container_name: dir_container
+    restart: always
+    command: bash entrypoint.sh
+    volumes:
+      - static_volume:/usr/src/app/static
+      - media_volume:/usr/src/app/media
+    ports:
+      - 8000:8000
+    env_file:
+      - ./.env.dev
+    depends_on:
+      - postgres_db
+
+  nginx:
+    build: ./nginx
+    container_name: dir_nginx_container
+    restart: on-failure
+    ports:
+      - 80:80
+    volumes:
+      - static_volume:/static
+      - media_volume:/media
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - web
+
+volumes:
+  static_volume:
+  media_volume:
+  postgres_data:
