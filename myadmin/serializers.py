@@ -4,7 +4,7 @@ from accounts.models import EntityProfile
 from resume.models import Resume, Recommendation, Portfolio, Language, Course, Education, WorkExperience, ResumePhone, \
     ResumeComment
 from resume.serializers import RecommendationSerializer, PortfolioSerializer, LanguageSerializer, CourseSerializer, \
-    EducationSerializer, WorkExperienceSerializer, ResumeCommentSerializer, ResumePhoneSerializer
+    EducationSerializer, WorkExperienceSerializer, ResumeCommentSerializer, ResumePhoneSerializer, PhoneSerializer
 from tariffs.models import UserTariffFunction
 
 from vacancy.serializers import PostingsSerializer, ProfileSerializer
@@ -127,7 +127,7 @@ class AdminResumeSerializer(serializers.ModelSerializer):
                                                         many=True, context=self.context).data
         representation['comments'] = ResumeCommentSerializer(instance.comments.all(),
                                                              many=True, context=self.context).data
-        representation['phones'] = ResumePhoneSerializer(instance.phones.all(),
+        representation['phones'] = PhoneSerializer(instance.phones.all(),
                                                              many=True, context=self.context).data
         categories = []
         for c in instance.specialization.all():
@@ -199,6 +199,19 @@ class ManagerListSerializer(serializers.ModelSerializer):
     class Meta:
         model = MyUser
         fields = ('id', 'username')
+
+
+class ManagerCustomListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Manager
+        fields = ('id', 'manager_name', 'telegram', 'whatsapp', 'email')
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['username'] = instance.manager.username
+        representation['user'] = instance.manager.id
+
+        return representation
 
 
 class BannerSerializer(serializers.ModelSerializer):

@@ -40,8 +40,6 @@ urlpatterns = [
 
     path('myadmin/checkuser/', CheckNoStatusUserView.as_view()),
 
-
-
     path('', include(router.urls)),
 
 

@@ -56,6 +56,7 @@ class TariffSerializer(serializers.ModelSerializer):
 
         return representation
 
+
 class DayAndPriceSerializer(serializers.ModelSerializer):
     class Meta:
         model = DayAndPrice

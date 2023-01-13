@@ -1,13 +1,10 @@
-from django.core.serializers import json
 from rest_framework.response import Response
 
-from rest_framework import generics, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 
-from resume.models import Resume
 from resume.serializers import ResumePhoneSerializer
-from resume.views import SelfUserView
 from .models import *
 from .serializers import *
 from .utils import check_dead_time_tariff
@@ -23,20 +20,18 @@ class ResumePBPView(APIView):
         user_tariff = user.user_tariff_function
         check_dead_time_tariff(user)
         if user.access_to_resumes.all().filter(user=user, resume=resume):
-            phones = resume.phones.all()
-            serializer = ResumePhoneSerializer(phones, many=True)
+            serializer = ResumePhoneSerializer(resume)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         elif user_tariff.contact_amount > 0:
             user_tariff.contact_amount -= 1
             user_tariff.save()
-            phones = resume.phones.all()
-            serializer = ResumePhoneSerializer(phones, many=True)
+            serializer = ResumePhoneSerializer(resume)
             if not user.access_to_resumes.all().filter(resume=resume):
                 AccessToResume.objects.create(user=user, resume=resume)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
-        return Response({"error": "You need to purchase a tariff!"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "Вам необходимо купить тариф!"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ResumeRubricView(APIView):
@@ -55,7 +50,7 @@ class ResumeRubricView(APIView):
                 serializer = ResumePhoneSerializer(phones, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
 
-        return Response({"error": "You need to purchase a tariff!"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "Вам необходимо купить тариф!"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ResumeAllView(APIView):
@@ -73,7 +68,7 @@ class ResumeAllView(APIView):
             serializer = ResumePhoneSerializer(phones, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
-        return Response({"error": "You need to purchase a tariff!"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "Вам необходимо купить тариф!"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class MyTariffListView(APIView):

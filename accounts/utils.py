@@ -30,8 +30,8 @@ def send_activation_code(email, code):
     SendMail(from_e='hr@hrgroup.kg', to_es=email, text=text).send()
 
 
-def send_new_pwd(password, email):
-    text = f'Ваш новый пароль: {password}'
+def send_new_pwd(password, email, username):
+    text = f'Ваш новый пароль: {password}\n Ваш логин: {username}'
     SendMail(from_e='hr@hrgroup.kg', to_es=email, text=text).send()
 
 

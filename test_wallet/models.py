@@ -19,7 +19,7 @@ class WalletHistory(models.Model):
     manager = models.CharField(max_length=100, blank=True, null=True)
     comment = models.TextField(blank=True, null=True)
     is_dumps = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f'{self.wallet} | {self.status}{self.amount} | {self.manager if self.manager else ""} | ' \

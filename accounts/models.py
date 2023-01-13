@@ -71,7 +71,7 @@ class EntityProfile(models.Model):
     address = models.CharField(max_length=200, blank=True, null=True)
     site = models.CharField(max_length=300, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
-    company_type = models.BooleanField(default=False)
+    company_type = models.BooleanField(default=True)
     social_media_type = models.CharField(max_length=20, blank=True, null=True)
     social_media = models.CharField(max_length=100, blank=True, null=True)
     instagram = models.CharField(max_length=200, blank=True, null=True)

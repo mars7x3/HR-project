@@ -204,7 +204,7 @@ class MeInfoResumeSerializer(serializers.ModelSerializer):
                                                         many=True, context=self.context).data
         representation['comments'] = ResumeCommentSerializer(instance.comments.all(),
                                                              many=True, context=self.context).data
-        representation['phones'] = ResumePhoneSerializer(instance.phones.all(),
+        representation['phones'] = PhoneSerializer(instance.phones.all(),
                                                          many=True, context=self.context).data
         representation['postings'] = PostingsSerializer(instance.postings.all(), many=True, context=self.context).data
         representation['cvviews'] = CVViewSerializer(instance.cvviews.all(), many=True, context=self.context).data
@@ -258,10 +258,26 @@ class WorkExperienceSerializer(serializers.ModelSerializer):
                   'description')
 
 
-class ResumePhoneSerializer(serializers.ModelSerializer):
+class PhoneSerializer(serializers.ModelSerializer):
     class Meta:
         model = ResumePhone
-        fields = ('phone', )
+        fields = ('phone',)
+
+
+class ResumePhoneSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Resume
+        fields = ('id', )
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['phones'] = PhoneSerializer(instance.phones.all(), many=True, context=self.context).data
+        representation['email'] = instance.user.email
+        representation['instagram'] = instance.instagram
+        representation['social_type'] = instance.social_media_type
+        representation['social_text'] = instance.social_media_text
+
+        return representation
 
 
 class PositionsSerializer(serializers.ModelSerializer):

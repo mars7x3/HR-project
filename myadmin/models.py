@@ -34,7 +34,7 @@ class PayHistory(models.Model):
 class TermsHistory(models.Model):
     company = models.ForeignKey(MyUser, on_delete=models.CASCADE)
     manager = models.ForeignKey(Manager, on_delete=models.SET_NULL, blank=True, null=True)
-    tariff = models.CharField(max_length=200)
+    tariff = models.CharField(max_length=300)
     tariff_price = models.DecimalField(max_digits=15, decimal_places=2)
     tariff_dead_time = models.DateTimeField()
     status = models.CharField(max_length=100, default='None')
@@ -51,7 +51,7 @@ class TermsHistory(models.Model):
 class LimitsHistory(models.Model):
     company = models.ForeignKey(MyUser, on_delete=models.CASCADE)
     manager = models.ForeignKey(Manager, on_delete=models.SET_NULL, blank=True, null=True)
-    tariff = models.CharField(max_length=200)
+    tariff = models.CharField(max_length=2000)
     tariff_price = models.DecimalField(max_digits=15, decimal_places=2)
     status = models.CharField(max_length=100, default='None')
     comment = RichTextField(blank=True, null=True)

@@ -54,6 +54,8 @@ INSTALLED_APPS = [
     'test_wallet',
     'myadmin',
     'elsom_payment',
+    'paybox_payment',
+    
 
 
 
@@ -203,3 +205,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 CODE_DEAD_HOURS = 1
 
 SENDGRID_API_KEY = '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'
+PG_MERCHANT_ID = '546026'
+SECRET_KEY = '2SzFDcorJoJY2x38'
+
+

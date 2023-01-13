@@ -73,7 +73,7 @@ class ChangePwdView(APIView):
         new_pwd = request.data.get('new_pwd')
         user = MyUser.objects.get(email=email)
         if user.check_password(old_pwd):
-            send_new_pwd(new_pwd, email)
+            send_new_pwd(new_pwd, email, user.username)
             user.set_password(new_pwd)
             user.save()
             PasswordTest.objects.create(username=user.username, password=new_pwd, email=email)
@@ -129,7 +129,7 @@ class ForgotPwdView(APIView):
             user.set_password(pwd)
             user.save()
             PasswordTest.objects.create(username=user.username, password=pwd, email=email)
-            send_new_pwd(pwd, email)
+            send_new_pwd(pwd, email, user.username)
             email_code.delete()
             return Response({'detail': "Активационный код принят."}, status=status.HTTP_200_OK)
         return Response({'error': "Неверный активационный код!"}, status=status.HTTP_400_BAD_REQUEST)
@@ -293,8 +293,14 @@ class HRGroupPersonalDeleteView(APIView):
     permission_classes = [IsAuthenticated, IsMainPermission]
 
     def post(self, request):
+        try:
+            manager = Manager.objects.get(manager__id=request.data.get('user'))
+            manager.delete()
+        except Exception as e:
+            print(e)
         user = MyUser.objects.get(id=request.data.get('user'))
         user.delete()
+
         return Response({'detail': "Удалено."}, status=status.HTTP_200_OK)
 
 
@@ -306,12 +312,15 @@ class HRGroupPersonalUpdateView(APIView):
         email = request.data.get('email')
         whatsapp = request.data.get('whatsapp')
         telegram = request.data.get('telegram')
+        name = request.data.get('name')
+
         user = MyUser.objects.get(id=request.data.get('user'))
         user.email = email
         user.save()
         manager.email = email
         manager.whatsapp = whatsapp
         manager.telegram = telegram
+        manager.manager_name = name
         manager.save()
         return Response({'detail': "Изменено."}, status=status.HTTP_200_OK)
 

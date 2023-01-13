@@ -29,6 +29,8 @@ urlpatterns = [
     path('myadmin/terms-list/', TermsListView.as_view()),
     path('myadmin/limits/', LimitsView.as_view()),
     path('myadmin/limits-list/', LimitsListView.as_view()),
+    path('myadmin/limits-create/', LimitsCreateView.as_view()),
+
     path('myadmin/dumps/', DumpsView.as_view()),
     path('myadmin/dumps-list/', DumpsListView.as_view()),
     path('myadmin/debtors/', DebtorsView.as_view()),
@@ -45,6 +47,8 @@ urlpatterns = [
 
     path('myadmin/check-view/', CheckView.as_view()),
     path('myadmin/manager-update/', ManagerUpdateView.as_view()),
+    path('myadmin/manager-custom-list/', ManagerCustomListView.as_view()),
+
 
     path('myadmin/down-pwd-user/', DownPwdView.as_view()),
     # path('myadmin/active-code/', ActiveCodeListView.as_view()),

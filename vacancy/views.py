@@ -193,4 +193,12 @@ class VacancyUpTime(APIView):
             return Response({"error": "Что-то пошло не так!"}, status=status.HTTP_400_BAD_REQUEST)
 
 
+class VacancyArchive(APIView):
+    permission_classes = [IsAuthenticated, IsAuthorPermission]
+
+    def post(self, request):
+        vacancy = Vacancy.objects.get(id=request.data.get('vacancy'))
+        vacancy.archive = request.data.get('status')
+        vacancy.save()
+        return Response({"detail": "В архиве"}, status=status.HTTP_200_OK)
 

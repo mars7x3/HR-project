@@ -11,7 +11,7 @@ def check_amount(tariffs):
         price = day_and_prices.price
 
         if pbp_price:
-            amount += t.get('count') * pbp_price
+            amount += int(t.get('count')) * pbp_price
         elif price:
             amount += price
 

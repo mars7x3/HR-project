@@ -14,11 +14,11 @@ urlpatterns = [
     path('category/vacancies/', VacancySpecListView.as_view()),
 
     path('vacancy-uptime/', VacancyUpTime.as_view()),
+    path('vacancy-archive/', VacancyArchive.as_view()),
 
     path('vacancies/vip/', VIPVacancyListView.as_view()),
     path('postings/create/', PostingsCreateView.as_view()),
     path('postings/is-viewed/', PostingsApplicantIsView.as_view()),
-
 
     path('favorite/entity/', ApplicantFavoriteView.as_view()),
 

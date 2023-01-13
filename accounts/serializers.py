@@ -7,6 +7,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from myadmin.serializers import EntityAllHistorySerializer
 from resume.models import EntityFavorite
 from resume.serializers import ResumeSerializer, MeInfoResumeSerializer
+from tariffs.models import UserTariffFunction
 from test_wallet.models import Wallet
 from test_wallet.serializers import WalletSerializer
 from vacancy.models import Vacancy, ApplicantFavorite
@@ -236,6 +237,7 @@ class EntityUserInfoSerializer(serializers.ModelSerializer):
             rep['vacancies'] = VacancySerializer(instance.vacancies.all(), many=True, context=self.context).data
         rep['wallet'] = WalletSerializer(instance.wallet, context=self.context).data
         rep['favorites'] = EntityFavoriteSerializer(instance.favorite_resumes.all(), many=True, context=self.context).data
+        rep['my_tariffs'] = UserTariffFunctionSerializer(instance.user_tariff_function, context=self.context).data
 
         return rep
 
@@ -291,4 +293,8 @@ class EntityFavoriteSerializer(serializers.ModelSerializer):
         return rep
     
 
+class UserTariffFunctionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserTariffFunction
+        fields = '__all__'
 

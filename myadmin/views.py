@@ -14,7 +14,7 @@ from accounts.models import EntityProfile, PasswordTest
 from accounts.utils import generate_pwd, send_new_pwd
 from accounts.views import CustomView
 from tariffs.models import UserTariffFunction, MyTariff, Tariff
-from accounts.permissions import IsMainPermission
+from accounts.permissions import IsMainPermission, IsEntityAuthenticated
 from accounts.serializers import EntityProfileSerializer, AdminManagerSerializer
 from resume.models import Resume, Specialization
 from resume.serializers import ResumeSerializer
@@ -79,6 +79,33 @@ class PayHistoryListView(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated, IsMainPermission]
     pagination_class = MyPaginationClass
 
+    @action(detail=False, methods=['get'])
+    def search(self, request, **kwargs):
+        queryset = self.get_queryset()
+        kwargs = {}
+
+        date = request.query_params.get('date')
+        if date:
+            start_date = date.split('$')[0]
+            end_date = date.split('$')[1]
+            history = queryset.filter(created_at__gte=start_date)
+            queryset = history.filter(created_at__lte=end_date)
+
+        payment = request.query_params.get('payment')
+        if payment:
+            kwargs['payment__icontains'] = payment
+
+        company = request.query_params.get('company')
+
+        if company:
+            kwargs['company__icontains'] = company
+
+        pay_his = queryset.filter(**kwargs)
+
+        page = self.paginate_queryset(pay_his if pay_his.exists() else queryset)
+        serializer = self.get_serializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
+
 
 class TermsView(APIView):
     permission_classes = [IsAuthenticated, IsMainPermission]
@@ -127,10 +154,14 @@ class LimitsViewSet(CustomView):
 
 
 class LimitsCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsEntityAuthenticated]
 
-    def get(self, request):
-        LimitsHistory.objects.create()
+    def post(self, request):
+        tariff_price = request.data.get('total_amount')
+        tariff = ' / '.join(request.data.get('tariff'))  # input tariff type LIST
+
+        LimitsHistory.objects.create(company=request.user, manager=request.user.profile.manager.first(),
+                                     tariff=tariff, tariff_price=tariff_price)
         return Response({"detail": "Success!"}, status=status.HTTP_200_OK)
 
 
@@ -258,6 +289,13 @@ class VacancyListView(viewsets.ReadOnlyModelViewSet):
             user = MyUser.objects.get(username=company).id
             kwargs['user'] = user
 
+        date = request.query_params.get('date')
+        if date:
+            start_date = date.split('$')[0]
+            end_date = date.split('$')[1]
+            vacancies = queryset.filter(created_at__gte=start_date)
+            queryset = vacancies.filter(created_at__lte=end_date)
+
         vacancies = queryset.filter(**kwargs)
         page = self.paginate_queryset(vacancies if vacancies.exists() else queryset)
         serializer = self.get_serializer(page, many=True)
@@ -296,6 +334,25 @@ class ResumeListView(viewsets.ReadOnlyModelViewSet):
         email = request.query_params.get('company')
         if email:
             queryset = MyUser.objects.get(email=email).resume.all()
+
+        username = request.query_params.get('user_id')
+        if username:
+            queryset = MyUser.objects.get(username=username).resume.all()
+
+        name = request.query_params.get('name')
+        if name:
+            kwargs['name__icontains'] = name.split()[1]
+
+        last_name = request.query_params.get('name')
+        if last_name:
+            kwargs['last_name__icontains'] = last_name.split()[0]
+
+        date = request.query_params.get('date')
+        if date:
+            start_date = date.split('$')[0]
+            end_date = date.split('$')[1]
+            resumes = queryset.filter(created_at__gte=start_date)
+            queryset = resumes.filter(created_at__lte=end_date)
 
         resumes = queryset.filter(**kwargs)
         page = self.paginate_queryset(resumes if resumes.exists() else queryset)
@@ -552,13 +609,12 @@ class CheckView(APIView):
             if t.dead_time <= timezone.now() + datetime.timedelta(days=3):
                 TermsHistory.objects.create(company=t.user, manager=t.user.entity_profile.manager.first(),
                                             tariff=t.tariff, tariff_price=t.price, tariff_dead_time=t.dead_time)
-                print(t)
                 t.is_terms = True
                 t.save()
 
         wallets = WalletHistory.objects.filter(status='+', is_dumps=False)
         for t in wallets:
-            if t.created_at <= timezone.now() - datetime.timedelta(days=2):
+            if t.created_at <= timezone.now() - datetime.timedelta(days=30):
                 DumpsHistory.objects.create(company=t.wallet.user, manager=t.wallet.user.entity_profile.manager.first(),
                                             last_transaction=t.created_at, last_transaction_amount=t.amount)
                 t.is_dumps = True
@@ -577,7 +633,7 @@ class DownPwdView(APIView):
         user.set_password(pwd)
         user.save()
         PasswordTest.objects.create(username=user.username, password=pwd)
-        send_new_pwd(pwd, user.email)
+        send_new_pwd(pwd, user.email, user.username)
         return Response({'detail': "Успешный сброс пароля."}, status=status.HTTP_200_OK)
 
 
@@ -589,5 +645,13 @@ class DownPwdView(APIView):
 #         serializer = ActiveCodeSerializer(codes, many=True)
 #         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+class ManagerCustomListView(APIView):
+    permission_classes = [IsAuthenticated, IsMainPermission]
+
+    def get(self, request):
+        managers = Manager.objects.all()
+        serializer = ManagerCustomListSerializer(managers, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
