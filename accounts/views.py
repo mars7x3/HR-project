@@ -224,22 +224,28 @@ class EntityPersonalListView(viewsets.ReadOnlyModelViewSet):
 
 
 class ProfileImageUpdateView(APIView):
-    permission_classes = [IsAuthenticated, UserIsAuthorPermission]
+    permission_classes = [IsAuthenticated]
 
     def put(self, request):
+        user = request.user
         image = request.data.get('image')
         profile = request.data.get('profile')
         profile = EntityProfile.objects.get(id=profile)
-        profile.image = image
-        profile.save()
-        return Response({"data": "Успешно!"}, status=status.HTTP_200_OK)
+        if profile.user == user:
+            profile.image = image
+            profile.save()
+            return Response({"data": "Успешно!"}, status=status.HTTP_200_OK)
+        return Response({"error": "Это не ваш профиль!"}, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request):
+        user = request.user
         profile = request.data.get('profile')
         profile = EntityProfile.objects.get(id=profile)
-        profile.image.delete()
-        profile.save()
-        return Response({"data": "Успешно!"}, status=status.HTTP_200_OK)
+        if profile.user == user:
+            profile.image.delete()
+            profile.save()
+            return Response({"data": "Успешно!"}, status=status.HTTP_200_OK)
+        return Response({"error": "Это не ваш профиль!"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ProfileImageView(APIView):
@@ -337,3 +343,6 @@ class CheckNoStatusUserView(APIView):
 
         return Response({"data": data}, status=status.HTTP_200_OK)
 
+"""eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc0NDYzNjQwLCJpYXQiOjE2NzQ0NjMwMzUsImp0aSI6IjA5OTdkZTQ5ZjM2YjQzOTg5NjE0MTY3MTM0YmIxN2RkIiwidXNlcl9pZCI6MTMyfQ.te4TpVnRGt91nQGh8jKFGQCLvJyhTOzfJSRN9ceI4lY"""
+"""eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc0NDYzNjQwLCJpYXQiOjE2NzQ0NjMwMzUsImp0aSI6IjA5OTdkZTQ5ZjM2YjQzOTg5NjE0MTY3MTM0YmIxN2RkIiwidXNlcl9pZCI6MTMyfQ.te4TpVnRGt91nQGh8jKFGQCLvJyhTOzfJSRN9ceI4lY"""
+"""eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc0NDYzNjQwLCJpYXQiOjE2NzQ0NjMwMzUsImp0aSI6IjA5OTdkZTQ5ZjM2YjQzOTg5NjE0MTY3MTM0YmIxN2RkIiwidXNlcl9pZCI6MTMyfQ.te4TpVnRGt91nQGh8jKFGQCLvJyhTOzfJSRN9ceI4lY"""

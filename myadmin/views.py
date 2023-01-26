@@ -24,7 +24,7 @@ from vacancy.models import Vacancy
 from vacancy.serializers import VacancySerializer
 from .serializers import *
 from .models import *
-from .utils import plan_done, pay_history
+from .utils import plan_done, pay_history, delete_debtor, pay_history_refund, plan_done_refund
 
 
 class MyPaginationClass(PageNumberPagination):
@@ -304,7 +304,7 @@ class VacancyListView(viewsets.ReadOnlyModelViewSet):
 
 class VacancyModerationListView(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated, IsMainPermission]
-    queryset = Vacancy.objects.filter(is_moderation=False)
+    queryset = Vacancy.objects.filter(is_moderation=False, user__entity_profile__is_active=True)
     serializer_class = VacancySerializer
     pagination_class = MyPaginationClass
 
@@ -400,7 +400,7 @@ class AdminPurchaseTransaction(APIView):
             if tariff.id == 1:
                 resume_count = int(t.get('count'))
                 total_price = resume_count * pbp_price
-                date = datetime.datetime(2100, 1, 1, 12, 00, 00)
+                date = timezone.now() + datetime.timedelta(days=30)
                 MyTariff.objects.create(user=user, tariff=tariff.title, price=total_price, dead_time=date)
                 user_tariff_func.contact_amount += resume_count
                 user_tariff_func.contact_amount_dead_time = date
@@ -511,7 +511,8 @@ class AdminPurchaseTransaction(APIView):
                                         balance=wallet.amount)
         wallet.save()
         if wallet.amount < 0:
-            user.debtors.first().delete()
+            if user.debtors.exists():
+                user.debtors.first().delete()
             Debtors.objects.create(company=user, manager=user.entity_profile.manager.first(),
                                    transaction_amount=wallet.amount)
 
@@ -532,10 +533,43 @@ class AdminReplenishmentTransaction(APIView):
             EntityAllHistory.objects.create(user=wallet.user, amount=amount,
                                             comment=f"{payment} / {comment}", balance=wallet.amount)
             wallet.save()
+            delete_debtor(wallet, amount)
             pay_history(wallet, amount, payment, comment)
             if wallet.user.entity_profile.manager.exists():
                 plan_done(wallet.user.entity_profile.manager.first(), amount)
 
+            return Response({"detail": "Success!"}, status=status.HTTP_200_OK)
+
+        return Response({"error": "Amount or wallet required!"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class Refund(APIView):
+    permission_classes = [IsAuthenticated, IsMainPermission]
+
+    def post(self, request):
+        payment = f'{request.user.username} - возврат денег'
+        amount = request.data.get("amount")
+        wallet_id = request.data.get("wallet")
+        comment = request.data.get('comment')
+        if amount and wallet_id:
+            wallet = Wallet.objects.get(id=wallet_id)
+            wallet.amount = wallet.amount - int(amount)
+            WalletHistory.objects.create(wallet=wallet, status='-', amount=amount, comment=comment,
+                                         client=wallet.user.entity_profile.company)
+            EntityAllHistory.objects.create(user=wallet.user, amount=amount,
+                                            comment=f"{payment} / {comment}", balance=wallet.amount)
+            wallet.save()
+            pay_history_refund(wallet, amount, payment, comment)
+            delete_debtor(wallet, amount)
+
+            if wallet.user.entity_profile.manager.exists():
+                plan_done_refund(wallet.user.entity_profile.manager.first(), amount)
+
+            if wallet.amount < 0:
+                if wallet.user.debtors.exists():
+                    wallet.user.debtors.first().delete()
+                Debtors.objects.create(company=wallet.user, manager=wallet.user.entity_profile.manager.first(),
+                                       transaction_amount=wallet.amount)
             return Response({"detail": "Success!"}, status=status.HTTP_200_OK)
 
         return Response({"error": "Amount or wallet required!"}, status=status.HTTP_400_BAD_REQUEST)

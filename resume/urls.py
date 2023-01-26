@@ -25,8 +25,6 @@ urlpatterns = [
     path('resume-uptime/', ResumeUpTime.as_view()),
     path('favorite/applicant/', EntityFavoriteView.as_view()),
 
-    path('instagram/', InstagramView.as_view()),
-
 
     path('', include(router.urls)),
 

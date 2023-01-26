@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from accounts.permissions import IsAuthorPermission
 from myadmin.models import EntityAllHistory, LimitsHistory
-from myadmin.utils import plan_done, pay_history
+from myadmin.utils import plan_done, pay_history, delete_debtor
 from tariffs.models import MyTariff, Tariff
 from vacancy.models import Vacancy
 
@@ -106,7 +106,7 @@ class PurchaseTransaction(APIView):
                 if tariff.id == 1:
                     resume_count = int(t.get('count'))
                     total_price = resume_count * pbp_price
-                    date = datetime.datetime(2100, 1, 1, 12, 00, 00)
+                    date = timezone.now() + datetime.timedelta(days=30)
                     MyTariff.objects.create(user=user, tariff=tariff.title, price=total_price, dead_time=date)
                     user_tariff_func.contact_amount += resume_count
                     user_tariff_func.contact_amount_dead_time = date
@@ -235,11 +235,12 @@ class ReplenishmentTransaction(APIView):
                                             comment=payment,
                                             balance=wallet.amount)
             wallet.save()
-
+            delete_debtor(wallet, amount)
             pay_history(wallet, amount, payment)
             if wallet.user.entity_profile.manager.exists():
                 plan_done(wallet.user.entity_profile.manager.first(), amount)
             return Response({"detail": "Success!"}, status=status.HTTP_200_OK)
 
         return Response({"error": "Amount or wallet required!"}, status=status.HTTP_400_BAD_REQUEST)
+
 

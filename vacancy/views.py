@@ -1,3 +1,4 @@
+import time
 from datetime import timedelta
 
 from django.utils import timezone
@@ -197,8 +198,11 @@ class VacancyArchive(APIView):
     permission_classes = [IsAuthenticated, IsAuthorPermission]
 
     def post(self, request):
-        vacancy = Vacancy.objects.get(id=request.data.get('vacancy'))
-        vacancy.archive = request.data.get('status')
-        vacancy.save()
-        return Response({"detail": "В архиве"}, status=status.HTTP_200_OK)
+        if request.user.entity_profile.is_active or request.user.entity_profile.is_moderation is False:
+            vacancy = Vacancy.objects.get(id=request.data.get('vacancy'))
+            vacancy.archive = request.data.get('status')
+            vacancy.save()
+            return Response({"detail": "В архиве"}, status=status.HTTP_200_OK)
+        return Response({"error": "Ваш профиль еще не активен!"}, status=status.HTTP_400_BAD_REQUEST)
+
 

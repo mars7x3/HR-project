@@ -14,10 +14,18 @@ class PayBoxCreateView(APIView):
     def post(self, request):
         data = request.data
         user = request.user
-        order_id = PayBoxTransactionReceipt.objects.create(wallet=user.wallet, pg_amount=data.get('amount')).id
-        result = paybox_transaction(str(order_id), data.get('amount'))
+        if data.get('amount'):
+            order = PayBoxTransactionReceipt.objects.create(wallet=user.wallet, pg_amount=data.get('amount'),
+                                                            pg_result='0')
 
-        return Response({'pay_url': result}, status=status.HTTP_200_OK)
+            result = paybox_transaction(str(order.id), data.get('amount'))
+            if result:
+                return Response({'pay_url': result}, status=status.HTTP_200_OK)
+            order.delete()
+            return Response('Вышла непредвиденная ошибка со стороны платежной системы. Попробуйте позже!',
+                            status=status.HTTP_400_BAD_REQUEST)
+        return Response('Передайте сумму платежа!',
+                        status=status.HTTP_400_BAD_REQUEST)
 
 
 class PayBoxResultView(APIView):
@@ -27,8 +35,12 @@ class PayBoxResultView(APIView):
         pg_order_id = data.get('pg_order_id')
         receipt = PayBoxTransactionReceipt.objects.get(id=pg_order_id)
 
+        if receipt.pg_result == '1':
+            response = result_xml_1(data.get('pg_salt'), data.get('pg_sig'))
+            return Response(response, status=status.HTTP_200_OK)
+
         for key, value in data.items():
-            setattr(receipt, key, value[0])
+            setattr(receipt, key, value)
         receipt.save()
 
         if receipt.pg_result == '1':

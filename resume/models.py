@@ -42,7 +42,7 @@ class Resume(models.Model):
     key_skills = models.TextField(blank=True)
     pk_lvl = models.CharField(max_length=100, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    up_time = models.DateTimeField(auto_now_add=True)
+    up_time = models.DateTimeField(auto_now=True)
     vip_status = models.BooleanField(default=False)
     archive = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
@@ -58,7 +58,7 @@ class Resume(models.Model):
         return f'{self.id}. {self.user.email} - {self.last_name} {self.name}'
 
     class Meta:
-        ordering = ('-created_at',)
+        ordering = ('-up_time',)
 
 
 class Recommendation(models.Model):
@@ -108,6 +108,9 @@ class WorkExperience(models.Model):
     work_date_from = models.CharField(max_length=100)
     work_date_to = models.CharField(max_length=100)
     description = models.TextField()
+
+    class Meta:
+        ordering = ('id',)
 
 
 class ResumePhone(models.Model):

@@ -55,10 +55,7 @@ INSTALLED_APPS = [
     'myadmin',
     'elsom_payment',
     'paybox_payment',
-    
-
-
-
+    'pay24_payment',
 
 ]
 
@@ -161,8 +158,8 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=24),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=10),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=3),
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': False,
     'UPDATE_LAST_LOGIN': False,
@@ -207,5 +204,12 @@ CODE_DEAD_HOURS = 1
 SENDGRID_API_KEY = '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'
 PG_MERCHANT_ID = '546026'
 SECRET_KEY = '2SzFDcorJoJY2x38'
+
+# REDIS_HOST = os.environ.get("REDIS_HOST")
+# REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD")
+# REDIS_PORT = int(os.environ.get("REDIS_PORT"))
+# BROKER_URL = f'redis://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/0'
+# BROKER_TRANSPORT_OPTIONS = {'visibility_timeout': 3600}
+# CELERY_RESULT_BACKEND = f"redis://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/0"
 
 

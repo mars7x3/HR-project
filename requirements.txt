@@ -11,3 +11,6 @@ django-filter
 drf-extra-fields
 sendgrid
 xmltodict
+celery==5.2.7
+redis==4.0.2
+

@@ -38,6 +38,8 @@ urlpatterns = [
 
     path('myadmin/transaction-minus/', AdminPurchaseTransaction.as_view()),
     path('myadmin/transaction-plus/', AdminReplenishmentTransaction.as_view()),
+    path('myadmin/transaction-refund/', Refund.as_view()),
+
 
     path('myadmin/manager-list/', ManagersListView.as_view()),
 

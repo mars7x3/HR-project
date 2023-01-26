@@ -19,7 +19,7 @@ class Vacancy(models.Model):
     city = models.CharField(max_length=50)
     group = models.CharField(max_length=50, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    up_time = models.DateTimeField(auto_now_add=True)
+    up_time = models.DateTimeField(auto_now=True)
     requirements = RichTextField()
     terms = RichTextField()
     responsibilities = RichTextField()
@@ -38,7 +38,9 @@ class Vacancy(models.Model):
         return f"{self.id}. {self.user.email} - {self.position}"
 
     class Meta:
-        ordering = ('-created_at',)
+        ordering = ('-up_time',)
+
+
 
 
 class Postings(models.Model):

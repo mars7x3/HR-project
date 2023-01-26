@@ -43,6 +43,7 @@ urlpatterns = [
     path('api/v1/', include('myadmin.urls')),
     path('api/v1/', include('elsom_payment.urls')),
     path('api/v1/', include('paybox_payment.urls')),
+    path('api/v1/', include('pay24_payment.urls')),
 
 ]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,5 +1,8 @@
 from uuid import uuid4
 
+from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth.hashers import check_password
+from django.db.models import Q
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -29,7 +32,14 @@ class MyUserSerializer(serializers.ModelSerializer):
 
 
 class LoginSerializer(TokenObtainPairSerializer):
+
     def validate(self, attrs):
+        login = attrs[self.username_field]
+        users = get_user_model().objects.filter(Q(username=login) | Q(email=login))
+
+        if users.exists():
+            attrs[self.username_field] = users.first().username
+
         data = super().validate(attrs)
         data['user_status'] = self.user.user_status
         data['user'] = self.user.id
@@ -55,7 +65,7 @@ class AuthenticatedUserSerializer(serializers.ModelSerializer):
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = MyUser
-        fields = ('email', 'user_status', 'password')
+        fields = ('email', 'user_status', 'password', 'phone')
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
@@ -87,12 +97,22 @@ class EntityProfileSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         profile = instance
         request = self.context.get('request')
+
         for key, value in validated_data.items():
             setattr(profile, key, value)
+
+        # TODO: Разделить админ часть отдельно
         if request.user.user_status == 'entity':
             profile.is_moderation = False
             profile.is_active = False
         profile.save()
+
+        if profile.is_active is False and profile.is_moderation is True:
+            vacancies = []
+            for vacancy in profile.user.vacancies.all():
+                vacancy.archive = True
+                vacancies.append(vacancy)
+            Vacancy.objects.bulk_update(vacancies, ['archive'])
 
         requisites = request.data.get('entity_requisites')
         if requisites:

@@ -54,12 +54,11 @@ class IsMainPermission(BasePermission):
         if 'main' == request.user.user_status or 'manager' == request.user.user_status \
                 or 'moderator' == request.user.user_status:
             return True
+        return False
 
 
 class IsEntityAuthenticated(BasePermission):
     def has_permission(self, request, view):
         if request.user.is_authenticated and request.user.user_status == 'entity':
             return True
-
-
-
+        return False

@@ -241,33 +241,3 @@ class CVViewView(APIView):
         CVView.objects.create(resume=Resume.objects.get(id=resume), company=MyUser.objects.get(id=company))
         return Response({"data": "Success!"}, status=status.HTTP_200_OK)
 
-
-class InstagramView(APIView):
-    def get(self, request):
-        resumes = Resume.objects.filter(is_active=True)
-        instagram_list = []
-        for i in resumes:
-            if i.instagram:
-                instagram_list.append(i)
-
-        unique_list = []
-        for i in instagram_list:
-            if {i.user.username: i.instagram} not in unique_list:
-                unique_list.append({i.user.username: i.instagram})
-        workbook = xlsxwriter.Workbook('test.xlsx')
-        worksheet = workbook.add_worksheet()
-        row = 0
-        for u in unique_list:
-            for k, v in u.items():
-                if v == 'mars7x3':
-                    print(k)
-        #         worksheet.write(row, 0, k)
-        #         worksheet.write(row, 1, v)
-        #         row += 1
-        #         workbook.close()
-        # print(len(unique_list))
-        return Response({"detail": "OK"}, status=status.HTTP_200_OK)
-
-
-
-

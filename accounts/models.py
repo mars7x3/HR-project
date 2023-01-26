@@ -53,6 +53,7 @@ class MyUser(AbstractUser):
     email = models.EmailField(_("email address"), unique=True)
     user_status = models.CharField(choices=STATUS, max_length=50, blank=True, null=True)
     image = models.ImageField(upload_to='user_avatar', blank=True, null=True)
+    phone = models.CharField(max_length=50, blank=True, null=True)
 
     def __str__(self):
         return f'{self.email or self.username} - {self.id}'

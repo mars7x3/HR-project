@@ -86,3 +86,52 @@ class MyTariff(models.Model):
 
     def __str__(self):
         return f'{self.user.username} | {self.tariff} | {self.price}KGS | {self.dead_time}'
+
+
+class UserTariffControl(models.Model):
+    user = models.OneToOneField(MyUser, on_delete=models.CASCADE, related_name='tariff_control')
+    contact_amount = models.IntegerField(default=0, verbose_name='Доступ к резюме поштучно')
+    contact_amount_dead_time = models.DateTimeField(verbose_name='Время доступ к резюме поштучно', auto_now_add=True)
+    vip_vacancy_count_rubrics = models.IntegerField(default=0)
+    vip_vacancy_count_all_rubrics = models.IntegerField(default=0)
+    vip_vacancy_deed_time = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.id}. {self.user.username}'
+
+    class Meta:
+        verbose_name_plural = 'Подключенные тарифы Контроль'
+        verbose_name = 'Подключенные тарифы Контроль'
+
+
+class TariffControlEmployer(models.Model):
+    tariff_control = models.ForeignKey(UserTariffControl, on_delete=models.CASCADE, related_name='tс_employer')
+    is_active = models.BooleanField(default=False)
+    is_moderation = models.BooleanField(default=False, verbose_name=' Модерация ведущие компании')
+    # employer_tariff_title = models.CharField(max_length=300, blank=True, null=True)
+    title = models.CharField(max_length=200, verbose_name='Название Ведущие компании')
+    link = models.CharField(max_length=200, verbose_name='Ссылка Ведущие компании', blank=True, null=True)
+    image = models.ImageField(upload_to='banner', verbose_name='Лого Ведущие компании', blank=True, null=True)
+
+    dead_time = models.DateTimeField(verbose_name='Время Ведущие компании', auto_now_add=True)
+
+
+class TariffControlRubric(models.Model):
+    tariff_control = models.ForeignKey(UserTariffControl, on_delete=models.CASCADE, related_name='tс_contact_rubrics')
+    rubric = models.ForeignKey(Specialization, on_delete=models.SET_NULL, related_name='tс_contacts', null=True)
+
+    dead_time = models.DateTimeField(auto_now_add=True)
+
+
+class TariffControlBanner(models.Model):
+    tariff_control = models.ForeignKey(UserTariffControl, on_delete=models.CASCADE, related_name='tс_banner')
+    rubric = models.ForeignKey(Specialization, on_delete=models.SET_NULL, related_name='tс_banners', null=True)
+    is_active = models.BooleanField(default=False)
+    is_moderation = models.BooleanField(default=False, verbose_name='Модерация банера')
+    tariff_title = models.CharField(max_length=300, blank=True, null=True)
+    link = models.CharField(max_length=300, blank=True, null=True, verbose_name='URL банера')
+    image = models.FileField(upload_to='banner', blank=True, null=True, verbose_name='Фото Банера')
+
+    dead_time = models.DateTimeField(auto_now_add=True)
+
+

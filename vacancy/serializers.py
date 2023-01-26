@@ -91,8 +91,10 @@ class VacancySerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         specializations = validated_data.pop('specialization')
         vacancy = Vacancy.objects.create(**validated_data)
+
         vacancy.is_moderation = False
         vacancy.save()
+
         if specializations:
             for s in specializations:
                 if s.parent_specialization:
